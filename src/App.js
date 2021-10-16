@@ -2,14 +2,6 @@ import './App.css';
 import { useEffect, useRef, useState } from 'react';
 
 const MAX_FILE_SIZE_BYTES = 5000000; // 5 mb
-const getBase64 = (file) => {
-  const reader = new FileReader();
-  return new Promise((resolve, reject) => {
-    reader.onload = ev => resolve(ev.target.result.replace(/^data:(.*,)?/, ''));  
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  })
-}
 
 function App() {
   let [accepted, setAccepted] = useState("");
@@ -18,7 +10,7 @@ function App() {
   async function getAccepted() {
     let acceptedResponse = await fetch("http://localhost/api/upload/supported");
     let acceptedJson = await acceptedResponse.json();
-    setAccepted(acceptedJson.map(fileType => "." + fileType).join(", "));
+    setAccepted(acceptedJson.join(", "));
   }
 
   async function uploadFile() {
@@ -30,18 +22,16 @@ function App() {
       return;
     }
 
-    let fileType = file.type.split("/").pop();
-    let fileContent = await getBase64(file);
+    let formData = new FormData();
+    formData.append("image", uploadInput.current.files[0]);
     let userId = prompt("Enter user UUID.");
-    let params = {
-      "type": fileType,
-      "userId": userId
-    };
-    let uploadResponse = await fetch("http://localhost/api/upload?" + new URLSearchParams(params), {
+    let uploadResponse = await fetch("http://localhost:8080/api/upload?" + new URLSearchParams({"userId": userId}), {
       method: "POST",
-      body: fileContent
+      body: formData
     });
-    console.log(uploadResponse);
+    if (!uploadResponse.ok) {
+      alert("Failed to upload!");
+    }
   }
 
   useEffect(() => getAccepted(), []);
