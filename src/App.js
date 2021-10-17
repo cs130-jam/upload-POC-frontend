@@ -25,7 +25,7 @@ function App() {
     let formData = new FormData();
     formData.append("image", uploadInput.current.files[0]);
     let userId = prompt("Enter user UUID.");
-    let uploadResponse = await fetch("http://localhost:8080/api/upload?" + new URLSearchParams({"userId": userId}), {
+    let uploadResponse = await fetch("http://localhost/api/upload?" + new URLSearchParams({"userId": userId}), {
       method: "POST",
       body: formData
     });
